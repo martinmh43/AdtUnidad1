@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class GestionEmpleados {
+public class Ejercicio4 {
 
     private static final int TAMANIO_ID = 4;
     private static final int TAMANIO_APELLIDO = 20;
@@ -14,9 +14,7 @@ public class GestionEmpleados {
             System.out.println("ERROR: Son necesarios al menos 1 parámetro.");
             return;
         }
-
         String operacion = args[0];
-
         switch (operacion) {
             case "crear":
                 if (args.length != 5) {
@@ -29,7 +27,6 @@ public class GestionEmpleados {
                 double salario = Double.parseDouble(args[4]);
                 crearEmpleado(id, apellido, departamento, salario);
                 break;
-
             case "modificar":
                 if (args.length != 3) {
                     System.out.println("ERROR: Son necesarios 3 parámetros para modificar.");
@@ -39,7 +36,6 @@ public class GestionEmpleados {
                 double importe = Double.parseDouble(args[2]);
                 modificarSalario(id, importe);
                 break;
-
             case "borrar":
                 if (args.length != 2) {
                     System.out.println("ERROR: Son necesarios 2 parámetros para borrar.");
@@ -48,7 +44,6 @@ public class GestionEmpleados {
                 id = Integer.parseInt(args[1]);
                 borrarEmpleado(id);
                 break;
-
             case "mostrarBorrados":
                 mostrarEmpleadosBorrados();
                 break;
@@ -62,7 +57,6 @@ public class GestionEmpleados {
         }
     }
 
-
     private static void modificarSalario(int id, double importe) {
         try (RandomAccessFile archivo = new RandomAccessFile("empleados.dat", "rw")) {
             long posicion = (id - 1) * TAMANIO_REGISTRO;
@@ -71,22 +65,17 @@ public class GestionEmpleados {
                 System.out.println("ERROR: El empleado con ID " + id + " no existe.");
                 return;
             }
-
             archivo.seek(posicion);
             int idEmpleado = archivo.readInt();
-
             if (idEmpleado == 0) {
                 System.out.println("ERROR: El empleado con ID " + id + " no existe.");
                 return;
             }
-
             byte[] apellidoBytes = new byte[TAMANIO_APELLIDO];
             archivo.readFully(apellidoBytes);
             String apellido = new String(apellidoBytes).trim();
-
             archivo.skipBytes(TAMANIO_DEPARTAMENTO);
             double salarioAntiguo = archivo.readDouble();
-
             double nuevoSalario = salarioAntiguo + importe;
             archivo.seek(posicion + TAMANIO_ID + TAMANIO_APELLIDO + TAMANIO_DEPARTAMENTO);
             archivo.writeDouble(nuevoSalario);
@@ -103,20 +92,16 @@ public class GestionEmpleados {
     private static void borrarEmpleado(int id) {
         try (RandomAccessFile archivo = new RandomAccessFile("empleados.dat", "rw")) {
             long posicion = (id - 1) * TAMANIO_REGISTRO;
-
             if (posicion >= archivo.length()) {
                 System.out.println("ERROR: El empleado con ID " + id + " no existe.");
                 return;
             }
-
             archivo.seek(posicion);
             int idEmpleado = archivo.readInt();
-
             if (idEmpleado == 0) {
                 System.out.println("ERROR: El empleado con ID " + id + " no existe.");
                 return;
             }
-
             archivo.seek(posicion);
             archivo.writeInt(-1);
             archivo.writeBytes(String.format("%-" + TAMANIO_APELLIDO + "s", idEmpleado));
@@ -133,11 +118,9 @@ public class GestionEmpleados {
     private static void mostrarEmpleadosBorrados() {
         try (RandomAccessFile archivo = new RandomAccessFile("empleados.dat", "r")) {
             long numRegistros = archivo.length() / TAMANIO_REGISTRO;
-
             for (int i = 0; i < numRegistros; i++) {
                 archivo.seek(i * TAMANIO_REGISTRO);
                 int idEmpleado = archivo.readInt();
-
                 if (idEmpleado == -1) {
                     byte[] apellidoBytes = new byte[TAMANIO_APELLIDO];
                     archivo.readFully(apellidoBytes);
@@ -146,7 +129,6 @@ public class GestionEmpleados {
                     System.out.println("Empleado borrado: " + apellido);
                 }
             }
-
         } catch (IOException e) {
             System.out.println("ERROR al mostrar empleados borrados.");
         }
@@ -154,20 +136,16 @@ public class GestionEmpleados {
 
     private static void crearEmpleado(int id, String apellido, int departamento, double salario) {
         try (RandomAccessFile archivo = new RandomAccessFile("empleados.dat", "rw")) {
-
             long posicion = (id - 1) * TAMANIO_REGISTRO;
-
             if (posicion >= archivo.length()) {
                 archivo.setLength(posicion + TAMANIO_REGISTRO);
             }
             archivo.seek(posicion);
             int idEmpleado = archivo.readInt();
-
             if (idEmpleado != 0) {
                 System.out.println("ERROR: El registro ya existe para el empleado con ID " + id);
                 return;
             }
-
             archivo.seek(posicion);
             archivo.writeInt(id);
             archivo.writeBytes(String.format("%-" + TAMANIO_APELLIDO + "s", apellido));
